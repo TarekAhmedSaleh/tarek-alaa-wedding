@@ -1,0 +1,475 @@
+(function () {
+  'use strict';
+
+  // Wedding start and end, Cairo time.
+  var WEDDING = new Date('2026-12-18T16:00:00+02:00');
+  var WEDDING_END = new Date('2026-12-18T18:00:00+02:00');
+
+  var root = document.documentElement;
+  var main = document.getElementById('invitation');
+  var envelope = document.getElementById('envelope');
+  var seal = document.getElementById('seal');
+  var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Languages. English is also in index.html, for visitors without JavaScript. */
+
+  var TEXT = {
+    en: {
+      title: 'Tarek & Alaa | 18 December 2026',
+      names: 'Tarek & Alaa',
+      name1: 'Tarek', amp: '&', name2: 'Alaa',
+      hint: 'Tap the seal to open',
+      openLabel: 'Open the invitation',
+      invite: "You're invited to the wedding of",
+      portraitAlt: 'Watercolor portrait of Tarek and Alaa looking at each other, with Alaa holding a bouquet of white lilies, framed by pink flowers.',
+      dateHeading: 'Date', venueHeading: 'Venue',
+      weekday: 'Friday', day: '18', month: 'December', year: '2026',
+      time: '4:00 PM to 6:00 PM',
+      days: 'Days', hours: 'Hours', minutes: 'Minutes', seconds: 'Seconds',
+      caption: 'until our wedding',
+      today: 'Today is the day.',
+      thanks: 'Thank you for celebrating with us.',
+      googleCal: 'Add to Google Calendar',
+      otherCal: 'Use Apple or Outlook Calendar',
+      venue: 'Gar El Qamar Hall',
+      address: 'Khatt 10, Obour',
+      directions: 'Get directions',
+      closing: "We can't wait to celebrate with you.",
+      share: 'Share invitation',
+      copied: 'Invitation link copied',
+      copyThis: 'Copy this link: ',
+      shareText: "You're invited to the wedding of Tarek and Alaa on 18 December 2026, from 4:00 to 6:00 PM.",
+      calTitle: "Tarek & Alaa's wedding",
+      calPlace: 'Gar El Qamar Hall, Khatt 10, Obour',
+      icsFile: 'assets/wedding.ics',
+      mute: 'Turn music off', unmute: 'Turn music on',
+      switchTo: 'العربية', switchLang: 'ar', switchLabel: 'التبديل إلى العربية'
+    },
+    ar: {
+      title: 'طارق و آلاء | ١٨ ديسمبر ٢٠٢٦',
+      names: 'طارق و آلاء',
+      name1: 'طارق', amp: 'و', name2: 'آلاء',
+      hint: 'اضغط على الختم لفتح الدعوة',
+      openLabel: 'افتح الدعوة',
+      invite: 'يسعدنا دعوتكم لحضور حفل زفاف',
+      portraitAlt: 'لوحة مائية لطارق وآلاء ينظران إلى بعضهما، وآلاء تحمل باقة من الزنابق البيضاء، تحيط بهما زهور وردية.',
+      dateHeading: 'الموعد', venueHeading: 'المكان',
+      weekday: 'الجمعة', day: '١٨', month: 'ديسمبر', year: '٢٠٢٦',
+      time: 'من ٤:٠٠ إلى ٦:٠٠ مساءً',
+      days: 'يوم', hours: 'ساعة', minutes: 'دقيقة', seconds: 'ثانية',
+      caption: 'حتى موعد زفافنا',
+      today: 'اليوم هو يومنا المنتظر.',
+      thanks: 'شكرًا لمشاركتكم فرحتنا.',
+      googleCal: 'أضف إلى تقويم Google',
+      otherCal: 'استخدم تقويم Apple أو Outlook',
+      venue: 'قاعة جار القمر',
+      address: 'خط ١٠، العبور',
+      directions: 'احصل على الاتجاهات',
+      closing: 'في انتظاركم لنحتفل معًا.',
+      share: 'مشاركة الدعوة',
+      copied: 'تم نسخ رابط الدعوة',
+      copyThis: 'انسخ هذا الرابط: ',
+      shareText: 'يسعدنا دعوتكم لحضور حفل زفاف طارق وآلاء يوم ١٨ ديسمبر ٢٠٢٦، من ٤:٠٠ إلى ٦:٠٠ مساءً.',
+      calTitle: 'حفل زفاف طارق وآلاء',
+      calPlace: 'قاعة جار القمر، خط 10، العبور',
+      icsFile: 'assets/wedding-ar.ics',
+      mute: 'إيقاف الموسيقى', unmute: 'تشغيل الموسيقى',
+      switchTo: 'English', switchLang: 'en', switchLabel: 'Switch to English'
+    }
+  };
+
+  var lang = root.lang === 'ar' ? 'ar' : 'en';
+  var langButton = document.getElementById('lang');
+  var shareStatus = document.getElementById('share-status');
+
+  function applyLanguage(next) {
+    lang = next;
+    var t = TEXT[lang];
+    root.lang = lang;
+    root.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.title = t.title;
+
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      el.textContent = t[el.getAttribute('data-i18n')];
+    });
+
+    seal.setAttribute('aria-label', t.openLabel);
+    document.getElementById('portrait').alt = t.portraitAlt;
+
+    langButton.textContent = t.switchTo;
+    langButton.lang = t.switchLang;
+    langButton.setAttribute('aria-label', t.switchLabel);
+
+    document.getElementById('google-cal').href =
+      'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+      '&text=' + encodeURIComponent(t.calTitle) +
+      '&dates=20261218T140000Z/20261218T160000Z' +
+      '&location=' + encodeURIComponent(t.calPlace);
+    document.getElementById('other-cal').href = t.icsFile;
+
+    shareStatus.textContent = '';
+    updateSoundLabel();
+    updateCountdown();
+  }
+
+  langButton.addEventListener('click', function () {
+    var next = TEXT[lang].switchLang;
+    try { localStorage.setItem('lang', next); } catch (e) { /* Private browsing: the choice lasts until reload. */ }
+    applyLanguage(next);
+  });
+
+  /* Music: assets/music.mp3 starts on the tap that opens the envelope. Without that file, nothing shows. */
+
+  var music = document.getElementById('music');
+  var sound = document.getElementById('sound');
+  var muted = false;
+
+  function updateSoundLabel() {
+    sound.setAttribute('aria-pressed', String(muted));
+    sound.setAttribute('aria-label', muted ? TEXT[lang].unmute : TEXT[lang].mute);
+  }
+
+  function startMusic() {
+    music.volume = 0;
+    var playing = music.play();
+    if (playing) playing.catch(function () { /* No music file yet, or the browser refused. */ });
+    var fade = setInterval(function () {
+      music.volume = Math.min(0.7, music.volume + 0.05);
+      if (music.volume >= 0.7) clearInterval(fade);
+    }, 200);
+  }
+
+  music.addEventListener('playing', function () { sound.hidden = false; });
+
+  sound.addEventListener('click', function () {
+    muted = !muted;
+    if (muted) music.pause(); else music.play();
+    updateSoundLabel();
+  });
+
+  // Stop when the guest leaves the page, and carry on when they return.
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      music.pause();
+    } else if (!muted && root.classList.contains('opening')) {
+      var resumed = music.play();
+      if (resumed) resumed.catch(function () {});
+    }
+  });
+
+  /* Envelope */
+
+  // Always start at the top, even after a reload.
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  window.scrollTo(0, 0);
+
+  main.inert = true;
+
+  function openEnvelope() {
+    var box = seal.getBoundingClientRect();
+    startMusic();
+    root.classList.add('opening');
+    root.classList.remove('sealed');
+    main.inert = false;
+
+    var finish = function () {
+      envelope.remove();
+      main.setAttribute('tabindex', '-1');
+      main.focus({ preventScroll: true });
+    };
+
+    if (reducedMotion) {
+      finish();
+      return;
+    }
+    fx.burst(box.left + box.width / 2, box.top + box.height / 2, 70, 7);
+    setTimeout(finish, 2000);
+    setTimeout(fx.releasePetals, 800);
+  }
+
+  seal.addEventListener('click', openEnvelope, { once: true });
+
+  /* Effects canvas: gold dust in the air, sparkles at the fingertip, petals on opening. */
+
+  var fx = (function () {
+    var canvas = document.getElementById('fx');
+    var ctx = canvas.getContext('2d');
+    var dummy = { burst: function () {}, releasePetals: function () {} };
+    if (!ctx || reducedMotion) return dummy;
+
+    var w, h;
+    var GOLD = ['#e6c27e', '#c9a15f', '#f6e3b4'];
+    var PETAL = ['#eda9a8', '#f3c3bb', '#e08b95', '#f8dcd0', '#d9a860'];
+    var dust = [];
+    var sparks = [];
+    var petals = [];
+
+    function resize() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    var dustCount = w < 700 ? 22 : 44;
+    for (var i = 0; i < dustCount; i++) {
+      dust.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: 0.7 + Math.random() * 1.5,
+        rise: 0.08 + Math.random() * 0.22,
+        phase: Math.random() * Math.PI * 2,
+        rate: 0.012 + Math.random() * 0.02,
+        color: GOLD[i % GOLD.length]
+      });
+    }
+
+    function burst(x, y, count, speed) {
+      for (var i = 0; i < count; i++) {
+        var a = Math.random() * Math.PI * 2;
+        var v = speed * (0.25 + Math.random() * 0.75);
+        sparks.push({
+          x: x, y: y,
+          vx: Math.cos(a) * v,
+          vy: Math.sin(a) * v,
+          r: 0.8 + Math.random() * 2,
+          life: 1,
+          fade: 0.012 + Math.random() * 0.02,
+          color: GOLD[i % GOLD.length]
+        });
+      }
+    }
+
+    function releasePetals() {
+      var count = w < 700 ? 22 : 40;
+      for (var i = 0; i < count; i++) {
+        petals.push({
+          x: Math.random() * w,
+          y: -20 - Math.random() * h * 0.7,
+          size: 5 + Math.random() * 6,
+          fall: 2 + Math.random() * 1.6,
+          sway: 0.6 + Math.random() * 1.2,
+          phase: Math.random() * Math.PI * 2,
+          spin: (Math.random() - 0.5) * 0.05,
+          angle: Math.random() * Math.PI * 2,
+          color: PETAL[i % PETAL.length]
+        });
+      }
+    }
+
+    // A trail of gold follows the finger or mouse.
+    var lastSpark = 0;
+    window.addEventListener('pointermove', function (e) {
+      var now = performance.now();
+      if (now - lastSpark < 45) return;
+      lastSpark = now;
+      burst(e.clientX, e.clientY, 2, 1.1);
+    }, { passive: true });
+    window.addEventListener('pointerdown', function (e) {
+      burst(e.clientX, e.clientY, 12, 2.6);
+    }, { passive: true });
+
+    var last = performance.now();
+    function frame(now) {
+      var dt = Math.min((now - last) / 16.67, 3);
+      last = now;
+      ctx.clearRect(0, 0, w, h);
+
+      dust.forEach(function (d) {
+        d.y -= d.rise * dt;
+        d.phase += d.rate * dt;
+        d.x += Math.sin(d.phase) * 0.12 * dt;
+        if (d.y < -6) { d.y = h + 6; d.x = Math.random() * w; }
+        var glow = 0.25 + Math.abs(Math.sin(d.phase)) * 0.65;
+        ctx.fillStyle = d.color;
+        ctx.globalAlpha = glow * 0.22;
+        ctx.beginPath(); ctx.arc(d.x, d.y, d.r * 3, 0, 6.283); ctx.fill();
+        ctx.globalAlpha = glow;
+        ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, 6.283); ctx.fill();
+      });
+
+      sparks = sparks.filter(function (s) {
+        s.x += s.vx * dt;
+        s.y += s.vy * dt;
+        s.vx *= Math.pow(0.95, dt);
+        s.vy = s.vy * Math.pow(0.95, dt) + 0.035 * dt;
+        s.life -= s.fade * dt;
+        if (s.life <= 0) return false;
+        ctx.fillStyle = s.color;
+        ctx.globalAlpha = s.life * 0.28;
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r * 2.8, 0, 6.283); ctx.fill();
+        ctx.globalAlpha = s.life;
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.283); ctx.fill();
+        return true;
+      });
+
+      petals = petals.filter(function (p) {
+        p.y += p.fall * dt;
+        p.phase += 0.025 * dt;
+        p.angle += p.spin * dt;
+        p.x += Math.sin(p.phase) * p.sway * dt;
+        if (p.y > h + 30) return false;
+
+        // Turning the petal over in the air: narrow its width as it rotates.
+        var flip = 0.45 + Math.abs(Math.cos(p.phase)) * 0.55;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
+        ctx.scale(flip, 1);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = 0.9;
+        ctx.beginPath();
+        ctx.moveTo(0, -p.size);
+        ctx.bezierCurveTo(p.size * 0.9, -p.size * 0.6, p.size * 0.75, p.size * 0.65, 0, p.size);
+        ctx.bezierCurveTo(-p.size * 0.75, p.size * 0.65, -p.size * 0.9, -p.size * 0.6, 0, -p.size);
+        ctx.fill();
+        ctx.restore();
+        return true;
+      });
+
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+
+    return { burst: burst, releasePetals: releasePetals };
+  })();
+
+  /* Countdown */
+
+  var cdCells = document.getElementById('cd-cells');
+  var cdCaption = document.getElementById('cd-caption');
+  var cdDone = document.getElementById('cd-done');
+  var cdNums = {};
+  ['days', 'hours', 'minutes', 'seconds'].forEach(function (u) {
+    cdNums[u] = document.getElementById('cd-' + u);
+  });
+
+  function setNum(el, text) {
+    if (el.textContent === text) return;
+    el.textContent = text;
+    if (!reducedMotion && el.animate) {
+      el.animate(
+        [{ opacity: 0.25, transform: 'translateY(-.14em)' }, { opacity: 1, transform: 'none' }],
+        { duration: 420, easing: 'cubic-bezier(.16,.84,.3,1)' }
+      );
+    }
+  }
+
+  function updateCountdown() {
+    var now = new Date();
+    var locale = lang === 'ar' ? 'ar-EG' : 'en-US';
+
+    if (now >= WEDDING) {
+      cdCells.hidden = true;
+      cdCaption.hidden = true;
+      cdDone.hidden = false;
+      cdDone.textContent = now >= WEDDING_END ? TEXT[lang].thanks : TEXT[lang].today;
+      return;
+    }
+
+    var left = Math.ceil((WEDDING - now) / 1000);
+    var pad = new Intl.NumberFormat(locale, { minimumIntegerDigits: 2, useGrouping: false });
+    setNum(cdNums.days, new Intl.NumberFormat(locale, { useGrouping: false }).format(Math.floor(left / 86400)));
+    setNum(cdNums.hours, pad.format(Math.floor(left % 86400 / 3600)));
+    setNum(cdNums.minutes, pad.format(Math.floor(left % 3600 / 60)));
+    setNum(cdNums.seconds, pad.format(left % 60));
+  }
+
+  /* Sections come alive as they scroll into view. */
+
+  var sections = document.querySelectorAll('.when, .where, .closing');
+  if ('IntersectionObserver' in window) {
+    var seen = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('in');
+        seen.unobserve(entry.target);
+
+        // The last section ends in a shower of gold over the couple's names.
+        if (entry.target.classList.contains('closing')) {
+          setTimeout(function () {
+            var r = entry.target.querySelector('.closing-names').getBoundingClientRect();
+            fx.burst(r.left + r.width / 2, r.top + r.height / 2, 60, 5);
+          }, 1800);
+        }
+      });
+    }, { threshold: 0.22 });
+    sections.forEach(function (s) { seen.observe(s); });
+  } else {
+    sections.forEach(function (s) { s.classList.add('in'); });
+  }
+
+  /* The sky over the venue */
+
+  var sky = document.getElementById('sky');
+  var starCount = window.innerWidth < 700 ? 34 : 54;
+  for (var s = 0; s < starCount; s++) {
+    var star = document.createElement('span');
+    star.className = 'star';
+    star.style.left = (4 + Math.random() * 92) + '%';
+    star.style.top = (2 + Math.random() * 62) + '%';
+    star.style.setProperty('--s', (1 + Math.random() * 2.2).toFixed(1) + 'px');
+    star.style.setProperty('--t', (1.6 + Math.random() * 3).toFixed(1) + 's');
+    star.style.setProperty('--d', (-Math.random() * 4).toFixed(1) + 's');
+    sky.appendChild(star);
+  }
+
+  /* Scroll-linked motion: the moon rises, and the portrait drifts slightly. */
+
+  var moon = document.getElementById('moon');
+  var arch = moon.parentElement;
+  var heroArt = document.querySelector('.hero-art');
+  var ticking = false;
+
+  function onScroll() {
+    ticking = false;
+    var vh = window.innerHeight;
+    var top = arch.getBoundingClientRect().top;
+    var rise = Math.min(1, Math.max(0, (vh * 0.92 - top) / (vh * 0.62)));
+    moon.style.setProperty('--rise', rise.toFixed(3));
+    if (window.scrollY < vh * 1.5) {
+      heroArt.style.setProperty('--drift', (window.scrollY * 0.07).toFixed(1) + 'px');
+    }
+  }
+
+  if (!reducedMotion) {
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(onScroll);
+      }
+    }, { passive: true });
+    window.addEventListener('resize', onScroll);
+    onScroll();
+  }
+
+  /* Sharing */
+
+  document.getElementById('share').addEventListener('click', function () {
+    var t = TEXT[lang];
+    var url = window.location.origin + window.location.pathname + '?lang=' + lang;
+    var data = { title: t.names, text: t.shareText, url: url };
+
+    if (navigator.share) {
+      navigator.share(data).catch(function () { /* The guest closed the share sheet. */ });
+      return;
+    }
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(function () {
+        shareStatus.textContent = t.copied;
+      }, function () {
+        shareStatus.textContent = t.copyThis + url;
+      });
+      return;
+    }
+    shareStatus.textContent = t.copyThis + url;
+  });
+
+  applyLanguage(lang);
+  setInterval(updateCountdown, 1000);
+})();
