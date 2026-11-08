@@ -207,10 +207,13 @@
       main.focus({ preventScroll: true });
     };
 
+    // Sections wait until the envelope is open, so their animations are seen rather than played behind it.
     if (reducedMotion) {
+      watchSections();
       finish();
       return;
     }
+    setTimeout(watchSections, 2400);
     fx.burst(box.left + box.width / 2, box.top + box.height / 2, 70, 7);
     setTimeout(finish, 2000);
     setTimeout(fx.releasePetals, 800);
@@ -438,6 +441,17 @@
     setNum(cdNums.seconds, pad.format(left % 60));
   }
 
+  /* Flowers only start growing once their image has arrived. */
+
+  document.querySelectorAll('.vine, .corner, .sprig').forEach(function (img) {
+    function ready() { img.classList.add('loaded'); }
+    if (img.complete) ready();
+    else {
+      img.addEventListener('load', ready);
+      img.addEventListener('error', ready);
+    }
+  });
+
   /* Sections come alive as they scroll into view. */
 
   var sections = document.querySelectorAll('.when, .where, .wishes, .closing');
@@ -457,9 +471,9 @@
         }
       });
     }, { rootMargin: '0px 0px -18% 0px' });
-    sections.forEach(function (s) { seen.observe(s); });
+    var watchSections = function () { sections.forEach(function (s) { seen.observe(s); }); };
   } else {
-    sections.forEach(function (s) { s.classList.add('in'); });
+    var watchSections = function () { sections.forEach(function (s) { s.classList.add('in'); }); };
   }
 
   /* The sky over the venue */

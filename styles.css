@@ -91,7 +91,8 @@ a, a:hover, a:focus, a:active { text-decoration: none; }
   position: absolute;
   z-index: 12;
   top: max(12px, env(safe-area-inset-top));
-  right: 12px;
+  /* In the corner on phones; on wide screens, level with the edge of the invitation (1240px wide). */
+  right: max(12px, calc((100% - 1240px) / 2 + 12px));
   min-height: 44px;
   padding: .3rem 1.1rem;
   border: 1px solid rgb(201 161 95 / .75);
@@ -568,7 +569,8 @@ html[lang='ar'] .btn { font-size: 1.1875rem; }
   mask-image: linear-gradient(to top, #000 70%, transparent);
 }
 .vine { transition: clip-path 2.2s var(--ease-out) .3s; clip-path: inset(0); }
-.js .when:not(.in) .vine { clip-path: inset(100% 0 0 0); }
+/* Each flower waits for its image as well as the section, so it never pops in half-way. */
+.js .when:not(.in) .vine, .js .vine:not(.loaded) { clip-path: inset(100% 0 0 0); }
 .in .vine, .in .corner, .in .sprig { animation: sway 7s ease-in-out 2.5s infinite alternate; }
 .vine-right, .corner { rotate: 0deg; }
 @keyframes sway {
@@ -906,7 +908,7 @@ html[lang='ar'] .wish-empty { font-style: normal; }
   pointer-events: none;
   transition: transform 2.2s var(--ease-out), opacity 1.3s ease;
 }
-.js .closing:not(.in) .corner { opacity: 0; transform: scale(.55) rotate(-8deg); }
+.js .closing:not(.in) .corner, .js .corner:not(.loaded) { opacity: 0; transform: scale(.55) rotate(-8deg); }
 
 .sprig {
   position: absolute; bottom: 0; right: 0;
@@ -915,7 +917,7 @@ html[lang='ar'] .wish-empty { font-style: normal; }
   pointer-events: none;
   transition: transform 2s var(--ease-out) .4s, opacity 1.2s ease .4s;
 }
-.js .closing:not(.in) .sprig { opacity: 0; transform: scale(.6) rotate(8deg); }
+.js .closing:not(.in) .sprig, .js .sprig:not(.loaded) { opacity: 0; transform: scale(.6) rotate(8deg); }
 
 .closing-line {
   position: relative;
