@@ -456,7 +456,7 @@
           }, 1800);
         }
       });
-    }, { threshold: 0.22 });
+    }, { rootMargin: '0px 0px -18% 0px' });
     sections.forEach(function (s) { seen.observe(s); });
   } else {
     sections.forEach(function (s) { s.classList.add('in'); });
@@ -527,6 +527,25 @@
   var wishState = 'loading';
   var shown = PAGE_SIZE;
   var statusKey = '';
+  var seenKeys = {};
+
+  function wishKey(w) { return w.time + '|' + w.name; }
+
+  // Notes fade up one after another as they scroll into view.
+  var noteWatch = 'IntersectionObserver' in window && !reducedMotion
+    ? new IntersectionObserver(function (entries) {
+      var n = 0;
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var li = entry.target;
+        noteWatch.unobserve(li);
+        seenKeys[li.dataset.key] = true;
+        li.style.setProperty('--delay', (n++ * 0.12) + 's');
+        li.classList.add('seen');
+        setTimeout(function () { li.style.removeProperty('--delay'); }, 1600);
+      });
+    }, { rootMargin: '0px 0px -8% 0px' })
+    : null;
 
   function setWishStatus(key) {
     statusKey = key;
@@ -549,7 +568,10 @@
     var dateFormat = new Intl.DateTimeFormat(lang === 'ar' ? 'ar-EG' : 'en-GB', { day: 'numeric', month: 'long' });
     wishes.slice(0, shown).forEach(function (w) {
       var item = document.createElement('li');
-      item.className = 'wish' + (w.fresh ? ' fresh' : '');
+      item.className = 'wish';
+      item.dataset.key = wishKey(w);
+      if (!noteWatch || seenKeys[item.dataset.key]) item.classList.add('seen');
+      else noteWatch.observe(item);
       var seal = document.createElement('span');
       seal.className = 'wish-seal';
       seal.innerHTML = SEAL_SVG;
@@ -570,7 +592,6 @@
       note.append(text, sign, when);
       item.append(seal, note);
       wishList.appendChild(item);
-      w.fresh = false;
     });
     wishMore.hidden = wishes.length <= shown;
   }
@@ -611,6 +632,7 @@
     }
 
     wishSend.disabled = true;
+    wishForm.classList.add('sending');
     setWishStatus('sending');
 
     // Sent as plain text so the browser doesn't need extra permission from Google first.
@@ -623,23 +645,89 @@
       .then(function (data) {
         if (!data.ok) throw new Error(data.error || 'not ok');
         var added = data.message || { time: new Date().toISOString(), name: name, message: message };
-        added.fresh = true;
+        var from = wishForm.elements.message.getBoundingClientRect();
         wishes = [added].concat(wishes || []);
         wishState = 'ready';
+        shown += 1;
+        seenKeys[wishKey(added)] = true;
         wishForm.reset();
         setWishStatus('sent');
-        renderWishes();
-        var r = wishSend.getBoundingClientRect();
-        fx.burst(r.left + r.width / 2, r.top + r.height / 2, 30, 4);
-        fx.hearts(r.left + r.width / 2, r.top, 18);
+        deliverNote(wishKey(added), from);
       })
       .catch(function () {
         setWishStatus('sendFailed');
       })
       .then(function () {
         wishSend.disabled = false;
+        wishForm.classList.remove('sending');
       });
   });
+
+  // Re-draw the wall with the new note on top, and fly it there from the form.
+  function deliverNote(key, from) {
+    var before = {};
+    wishList.querySelectorAll('.wish').forEach(function (li) {
+      before[li.dataset.key] = li.getBoundingClientRect();
+    });
+    renderWishes();
+
+    var target = wishList.querySelector('.wish[data-key="' + CSS.escape(key) + '"]');
+    if (!target || reducedMotion || !target.animate) return;
+
+    // The notes already there slide over to make room.
+    wishList.querySelectorAll('.wish').forEach(function (li) {
+      var old = before[li.dataset.key];
+      if (!old || li === target) return;
+      var now = li.getBoundingClientRect();
+      var dx = old.left - now.left;
+      var dy = old.top - now.top;
+      if (Math.abs(dx) + Math.abs(dy) < 1) return;
+      li.animate(
+        [{ transform: 'translate(' + dx + 'px, ' + dy + 'px)' }, { transform: 'none' }],
+        { duration: 800, delay: 150, easing: 'cubic-bezier(.65, 0, .35, 1)', fill: 'backwards' }
+      );
+    });
+
+    // A copy of the note, placed over its spot on the page and started from the message box.
+    var to = target.getBoundingClientRect();
+    var look = getComputedStyle(target);
+    var flyer = target.cloneNode(true);
+    flyer.classList.add('flyer');
+    flyer.style.left = (to.left + window.scrollX) + 'px';
+    flyer.style.top = (to.top + window.scrollY) + 'px';
+    flyer.style.width = to.width + 'px';
+    flyer.style.rotate = look.rotate;
+    flyer.style.setProperty('--paper-tone', look.getPropertyValue('--paper-tone'));
+    target.classList.add('landing');
+    document.body.appendChild(flyer);
+
+    var scale = Math.min(1.15, Math.max(0.6, from.width / to.width));
+    var dx = (from.left + from.width / 2) - (to.left + to.width / 2);
+    var dy = (from.top + from.height / 2) - (to.top + to.height / 2);
+    var flight = flyer.animate([
+      { offset: 0, opacity: 0, transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(' + scale * 0.92 + ')' },
+      { offset: 0.14, opacity: 1, transform: 'translate(' + dx + 'px, ' + (dy - 26) + 'px) scale(' + scale + ') rotate(-3deg)' },
+      { offset: 0.55, opacity: 1, transform: 'translate(' + dx * 0.45 + 'px, ' + (dy * 0.45 - 70) + 'px) scale(' + (scale + 1) / 2 + ') rotate(5deg)' },
+      { offset: 1, opacity: 1, transform: 'none' }
+    ], { duration: 1500, easing: 'cubic-bezier(.45, 0, .2, 1)' });
+
+    // Keep the landing spot in view.
+    if (to.bottom > window.innerHeight - 24 || to.top < 0) {
+      window.scrollTo({ top: window.scrollY + to.top - window.innerHeight * 0.3, behavior: 'smooth' });
+    }
+
+    flight.onfinish = function () {
+      flyer.remove();
+      target.classList.remove('landing');
+      target.classList.add('stamped');
+      setTimeout(function () {
+        var s = target.querySelector('.wish-seal').getBoundingClientRect();
+        fx.burst(s.left + s.width / 2, s.top + s.height / 2, 34, 3.4);
+        fx.hearts(s.left + s.width / 2, s.top, 14);
+      }, 260);
+      setTimeout(function () { target.classList.remove('stamped'); }, 2200);
+    };
+  }
 
   loadWishes();
 
