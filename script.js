@@ -223,7 +223,7 @@
   var fx = (function () {
     var canvas = document.getElementById('fx');
     var ctx = canvas.getContext('2d');
-    var dummy = { burst: function () {}, releasePetals: function () {} };
+    var dummy = { burst: function () {}, releasePetals: function () {}, hearts: function () {} };
     if (!ctx || reducedMotion) return dummy;
 
     var w, h;
@@ -325,10 +325,21 @@
         s.x += s.vx * dt;
         s.y += s.vy * dt;
         s.vx *= Math.pow(0.95, dt);
-        s.vy = s.vy * Math.pow(0.95, dt) + 0.035 * dt;
+        s.vy = s.vy * Math.pow(0.95, dt) + (s.heart ? -0.012 : 0.035) * dt;
         s.life -= s.fade * dt;
         if (s.life <= 0) return false;
         ctx.fillStyle = s.color;
+        if (s.heart) {
+          // A heart, drawn from two curves meeting at the point.
+          var k = s.r;
+          ctx.globalAlpha = Math.min(1, s.life * 1.4);
+          ctx.beginPath();
+          ctx.moveTo(s.x, s.y + k * 0.9);
+          ctx.bezierCurveTo(s.x - k * 1.6, s.y - k * 0.1, s.x - k * 0.8, s.y - k * 1.3, s.x, s.y - k * 0.45);
+          ctx.bezierCurveTo(s.x + k * 0.8, s.y - k * 1.3, s.x + k * 1.6, s.y - k * 0.1, s.x, s.y + k * 0.9);
+          ctx.fill();
+          return true;
+        }
         ctx.globalAlpha = s.life * 0.28;
         ctx.beginPath(); ctx.arc(s.x, s.y, s.r * 2.8, 0, 6.283); ctx.fill();
         ctx.globalAlpha = s.life;
@@ -365,7 +376,25 @@
     }
     requestAnimationFrame(frame);
 
-    return { burst: burst, releasePetals: releasePetals };
+    // Hearts that float up and away, for a message sent with love.
+    function hearts(x, y, count) {
+      var HEART = ['#e08b95', '#c9a15f', '#eda9a8', '#a8324a'];
+      for (var i = 0; i < count; i++) {
+        sparks.push({
+          heart: true,
+          x: x + (Math.random() - 0.5) * 60,
+          y: y,
+          vx: (Math.random() - 0.5) * 2.4,
+          vy: -1.5 - Math.random() * 2.5,
+          r: 5 + Math.random() * 6,
+          life: 1,
+          fade: 0.008 + Math.random() * 0.008,
+          color: HEART[i % HEART.length]
+        });
+      }
+    }
+
+    return { burst: burst, releasePetals: releasePetals, hearts: hearts };
   })();
 
   /* Countdown */
@@ -483,6 +512,11 @@
   var WISHES_URL = '';
   var PAGE_SIZE = 6;
 
+  // A gold wax heart. It is fixed markup, never guest text.
+  var SEAL_SVG = '<svg viewBox="0 0 40 38" aria-hidden="true"><defs><radialGradient id="seal-gold" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#f3dda6"/><stop offset=".55" stop-color="#c9a15f"/><stop offset="1" stop-color="#8d6a31"/></radialGradient></defs>' +
+    '<path fill="url(#seal-gold)" d="M20 36S2.5 25.6 2.5 13.2A9.2 9.2 0 0 1 20 9.4a9.2 9.2 0 0 1 17.5 3.8C37.5 25.6 20 36 20 36Z"/>' +
+    '<path fill="none" stroke="#fff3d2" stroke-opacity=".55" stroke-width="1.2" d="M20 30.5S8 23 8 14.4a5.6 5.6 0 0 1 12-2.3 5.6 5.6 0 0 1 12 2.3C32 23 20 30.5 20 30.5Z"/></svg>';
+
   var wishForm = document.getElementById('wish-form');
   var wishStatus = document.getElementById('wish-status');
   var wishList = document.getElementById('wish-list');
@@ -516,20 +550,25 @@
     wishes.slice(0, shown).forEach(function (w) {
       var item = document.createElement('li');
       item.className = 'wish' + (w.fresh ? ' fresh' : '');
+      var seal = document.createElement('span');
+      seal.className = 'wish-seal';
+      seal.innerHTML = SEAL_SVG;
+      var note = document.createElement('div');
+      note.className = 'wish-note';
       var text = document.createElement('p');
       text.className = 'wish-text';
       text.dir = 'auto';
       text.textContent = w.message;
-      var by = document.createElement('p');
-      by.className = 'wish-by';
-      var who = document.createElement('span');
-      who.dir = 'auto';
-      who.textContent = w.name;
+      var sign = document.createElement('p');
+      sign.className = 'wish-sign';
+      sign.dir = 'auto';
+      sign.textContent = w.name;
       var when = document.createElement('time');
+      when.className = 'wish-date';
       when.dateTime = w.time;
       when.textContent = dateFormat.format(new Date(w.time));
-      by.append(who, when);
-      item.append(text, by);
+      note.append(text, sign, when);
+      item.append(seal, note);
       wishList.appendChild(item);
       w.fresh = false;
     });
@@ -591,7 +630,8 @@
         setWishStatus('sent');
         renderWishes();
         var r = wishSend.getBoundingClientRect();
-        fx.burst(r.left + r.width / 2, r.top + r.height / 2, 46, 5);
+        fx.burst(r.left + r.width / 2, r.top + r.height / 2, 30, 4);
+        fx.hearts(r.left + r.width / 2, r.top, 18);
       })
       .catch(function () {
         setWishStatus('sendFailed');
