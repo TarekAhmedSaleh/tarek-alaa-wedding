@@ -2,7 +2,7 @@
   'use strict';
 
   // Wedding start and end, Cairo time.
-  var WEDDING = new Date('2026-12-18T16:00:00+02:00');
+  var WEDDING = new Date('2026-12-18T15:00:00+02:00');
   var WEDDING_END = new Date('2026-12-18T18:00:00+02:00');
 
   var root = document.documentElement;
@@ -24,7 +24,7 @@
       portraitAlt: 'Watercolor portrait of Tarek and Alaa looking at each other, with Alaa holding a bouquet of white lilies, framed by pink flowers.',
       dateHeading: 'Date', venueHeading: 'Venue',
       weekday: 'Friday', day: '18', month: 'December', year: '2026',
-      time: '4:00 PM to 6:00 PM',
+      time: '3:00 PM to 6:00 PM',
       days: 'Days', hours: 'Hours', minutes: 'Minutes', seconds: 'Seconds',
       caption: 'until our wedding',
       today: 'Today is the day.',
@@ -38,7 +38,7 @@
       share: 'Share invitation',
       copied: 'Invitation link copied',
       copyThis: 'Copy this link: ',
-      shareText: "You're invited to the wedding of Tarek and Alaa on 18 December 2026, from 4:00 to 6:00 PM.",
+      shareText: "You're invited to the wedding of Tarek and Alaa on 18 December 2026, from 3:00 to 6:00 PM.",
       calTitle: "Tarek & Alaa's wedding",
       calPlace: 'Gar El Qamar Hall, Khatt 10, Obour',
       icsFile: 'assets/wedding.ics',
@@ -69,7 +69,7 @@
       portraitAlt: 'لوحة مائية لطارق وآلاء ينظران إلى بعضهما، وآلاء تحمل باقة من الزنابق البيضاء، تحيط بهما زهور وردية.',
       dateHeading: 'الموعد', venueHeading: 'المكان',
       weekday: 'الجمعة', day: '١٨', month: 'ديسمبر', year: '٢٠٢٦',
-      time: 'من ٤:٠٠ إلى ٦:٠٠ مساءً',
+      time: 'من ٣:٠٠ إلى ٦:٠٠ مساءً',
       days: 'يوم', hours: 'ساعة', minutes: 'دقيقة', seconds: 'ثانية',
       caption: 'حتى موعد زفافنا',
       today: 'اليوم هو يومنا المنتظر.',
@@ -83,7 +83,7 @@
       share: 'مشاركة الدعوة',
       copied: 'تم نسخ رابط الدعوة',
       copyThis: 'انسخ هذا الرابط: ',
-      shareText: 'يسعدنا دعوتكم لحضور حفل زفاف طارق وآلاء يوم ١٨ ديسمبر ٢٠٢٦، من ٤:٠٠ إلى ٦:٠٠ مساءً.',
+      shareText: 'يسعدنا دعوتكم لحضور حفل زفاف طارق وآلاء يوم ١٨ ديسمبر ٢٠٢٦، من ٣:٠٠ إلى ٦:٠٠ مساءً.',
       calTitle: 'حفل زفاف طارق وآلاء',
       calPlace: 'قاعة جار القمر، خط 10، العبور',
       icsFile: 'assets/wedding-ar.ics',
@@ -131,7 +131,7 @@
     document.getElementById('google-cal').href =
       'https://calendar.google.com/calendar/render?action=TEMPLATE' +
       '&text=' + encodeURIComponent(t.calTitle) +
-      '&dates=20261218T140000Z/20261218T160000Z' +
+      '&dates=20261218T130000Z/20261218T160000Z' +
       '&location=' + encodeURIComponent(t.calPlace);
     document.getElementById('other-cal').href = t.icsFile;
 
@@ -531,6 +531,17 @@
     '<path fill="url(#seal-gold)" d="M20 36S2.5 25.6 2.5 13.2A9.2 9.2 0 0 1 20 9.4a9.2 9.2 0 0 1 17.5 3.8C37.5 25.6 20 36 20 36Z"/>' +
     '<path fill="none" stroke="#fff3d2" stroke-opacity=".55" stroke-width="1.2" d="M20 30.5S8 23 8 14.4a5.6 5.6 0 0 1 12-2.3 5.6 5.6 0 0 1 12 2.3C32 23 20 30.5 20 30.5Z"/></svg>';
 
+  // The envelope's front, drawn once. Fixed markup, never guest text.
+  var ENV_FRONT = '<svg class="letter-front" viewBox="0 0 300 132" preserveAspectRatio="none" aria-hidden="true">' +
+    '<defs><linearGradient id="env-side" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6e2337"/><stop offset="1" stop-color="#561829"/></linearGradient>' +
+    '<linearGradient id="env-fold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a3450"/><stop offset="1" stop-color="#621d30"/></linearGradient></defs>' +
+    // The pocket: a straight top edge and a bottom fold pointing up (no top V, so it reads as open).
+    '<rect width="300" height="132" fill="url(#env-side)"/>' +
+    '<path d="M0 129L150 55L300 129" fill="none" stroke="#2a0a16" stroke-opacity=".3" stroke-width="5" vector-effect="non-scaling-stroke"/>' +
+    '<path d="M0 132L150 58L300 132Z" fill="url(#env-fold)"/>' +
+    '<path d="M0 132L150 58L300 132" fill="none" stroke="#e2c084" stroke-opacity=".6" vector-effect="non-scaling-stroke"/>' +
+    '<path d="M0 .5H300" fill="none" stroke="#e2c084" stroke-opacity=".8" vector-effect="non-scaling-stroke"/></svg>';
+
   var wishForm = document.getElementById('wish-form');
   var wishStatus = document.getElementById('wish-status');
   var wishList = document.getElementById('wish-list');
@@ -579,32 +590,47 @@
     wishEmpty.hidden = wishes.length > 0;
     wishEmpty.textContent = TEXT[lang].empty;
 
+    appendWishes(0, shown);
+  }
+
+  // Adds envelopes for wishes[from..to) to the end of the wall, leaving the ones already there untouched.
+  // Guests write in either language, whatever page they are on.
+  function scriptOf(s) {
+    return /[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]/.test(s) ? 'ar' : 'en';
+  }
+
+  function appendWishes(from, to) {
     var dateFormat = new Intl.DateTimeFormat(lang === 'ar' ? 'ar-EG' : 'en-GB', { day: 'numeric', month: 'long' });
-    wishes.slice(0, shown).forEach(function (w) {
+    wishes.slice(from, to).forEach(function (w) {
       var item = document.createElement('li');
       item.className = 'wish';
       item.dataset.key = wishKey(w);
       if (!noteWatch || seenKeys[item.dataset.key]) item.classList.add('seen');
       else noteWatch.observe(item);
-      var seal = document.createElement('span');
-      seal.className = 'wish-seal';
-      seal.innerHTML = SEAL_SVG;
+      item.innerHTML = '<div class="letter-back"></div>' +
+        '<div class="letter-flap"><span class="out"></span><span class="in"></span></div>' + ENV_FRONT +
+        '<span class="letter-seal"><span class="half-a">' + SEAL_SVG + '</span><span class="half-b">' + SEAL_SVG + '</span></span>';
+      var slot = document.createElement('div');
+      slot.className = 'letter-slot';
       var note = document.createElement('div');
-      note.className = 'wish-note';
+      note.className = 'wish-card';
       var text = document.createElement('p');
       text.className = 'wish-text';
       text.dir = 'auto';
       text.textContent = w.message;
+      text.lang = scriptOf(w.message);
       var sign = document.createElement('p');
       sign.className = 'wish-sign';
       sign.dir = 'auto';
       sign.textContent = w.name;
+      sign.lang = scriptOf(w.name);
       var when = document.createElement('time');
       when.className = 'wish-date';
       when.dateTime = w.time;
       when.textContent = dateFormat.format(new Date(w.time));
       note.append(text, sign, when);
-      item.append(seal, note);
+      slot.appendChild(note);
+      item.insertBefore(slot, item.querySelector('.letter-front'));
       wishList.appendChild(item);
     });
     wishMore.hidden = wishes.length <= shown;
@@ -631,8 +657,9 @@
   }
 
   wishMore.addEventListener('click', function () {
+    var from = shown;
     shown += PAGE_SIZE;
-    renderWishes();
+    appendWishes(from, shown);
   });
 
   wishForm.addEventListener('submit', function (e) {
@@ -659,14 +686,12 @@
       .then(function (data) {
         if (!data.ok) throw new Error(data.error || 'not ok');
         var added = data.message || { time: new Date().toISOString(), name: name, message: message };
-        var from = wishForm.elements.message.getBoundingClientRect();
         wishes = [added].concat(wishes || []);
         wishState = 'ready';
         shown += 1;
-        seenKeys[wishKey(added)] = true;
         wishForm.reset();
         setWishStatus('sent');
-        deliverNote(wishKey(added), from);
+        deliverNote(wishKey(added), wishForm.elements.message);
       })
       .catch(function () {
         setWishStatus('sendFailed');
@@ -678,7 +703,7 @@
   });
 
   // Re-draw the wall with the new note on top, and fly it there from the form.
-  function deliverNote(key, from) {
+  function deliverNote(key, fromEl) {
     var before = {};
     wishList.querySelectorAll('.wish').forEach(function (li) {
       before[li.dataset.key] = li.getBoundingClientRect();
@@ -686,7 +711,13 @@
     renderWishes();
 
     var target = wishList.querySelector('.wish[data-key="' + CSS.escape(key) + '"]');
-    if (!target || reducedMotion || !target.animate) return;
+    if (!target) return;
+    seenKeys[key] = true;
+    if (noteWatch) noteWatch.unobserve(target);
+    if (reducedMotion || !target.animate) {
+      target.classList.add('seen');
+      return;
+    }
 
     // The notes already there slide over to make room.
     wishList.querySelectorAll('.wish').forEach(function (li) {
@@ -702,45 +733,97 @@
       );
     });
 
-    // A copy of the note, placed over its spot on the page and started from the message box.
-    var to = target.getBoundingClientRect();
-    var look = getComputedStyle(target);
-    var flyer = target.cloneNode(true);
-    flyer.classList.add('flyer');
-    flyer.style.left = (to.left + window.scrollX) + 'px';
-    flyer.style.top = (to.top + window.scrollY) + 'px';
-    flyer.style.width = to.width + 'px';
-    flyer.style.rotate = look.rotate;
-    flyer.style.setProperty('--paper-tone', look.getPropertyValue('--paper-tone'));
-    target.classList.add('landing');
-    document.body.appendChild(flyer);
+    // The real envelope waits, invisible, in its final resting place (not its offset entrance position).
+    target.classList.add('landing', 'arrive');
+    var LAND = 1.035; // the flyer touches down a hair large, then settles into place
+    var flyer;
 
-    var scale = Math.min(1.15, Math.max(0.6, from.width / to.width));
-    var dx = (from.left + from.width / 2) - (to.left + to.width / 2);
-    var dy = (from.top + from.height / 2) - (to.top + to.height / 2);
-    var flight = flyer.animate([
-      { offset: 0, opacity: 0, transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(' + scale * 0.92 + ')' },
-      { offset: 0.14, opacity: 1, transform: 'translate(' + dx + 'px, ' + (dy - 26) + 'px) scale(' + scale + ') rotate(-3deg)' },
-      { offset: 0.55, opacity: 1, transform: 'translate(' + dx * 0.45 + 'px, ' + (dy * 0.45 - 70) + 'px) scale(' + (scale + 1) / 2 + ') rotate(5deg)' },
-      { offset: 1, opacity: 1, transform: 'none' }
-    ], { duration: 1500, easing: 'cubic-bezier(.45, 0, .2, 1)' });
-
-    // Keep the landing spot in view.
-    if (to.bottom > window.innerHeight - 24 || to.top < 0) {
-      window.scrollTo({ top: window.scrollY + to.top - window.innerHeight * 0.3, behavior: 'smooth' });
+    // Bring the landing spot into view first, while the other notes slide aside;
+    // flying during the scroll would carry the envelope off the screen.
+    var spot = target.getBoundingClientRect();
+    if (spot.bottom > window.innerHeight - 24 || spot.top < 0) {
+      window.scrollTo({ top: window.scrollY + spot.top - window.innerHeight * 0.3, behavior: 'smooth' });
+      var launched = false;
+      var go = function () {
+        if (launched) return;
+        launched = true;
+        window.removeEventListener('scrollend', go);
+        launch();
+      };
+      window.addEventListener('scrollend', go);
+      setTimeout(go, 900);
+    } else {
+      launch();
     }
 
-    flight.onfinish = function () {
-      flyer.remove();
+    function launch() {
+      var box = target.getBoundingClientRect();
+      var to = {
+        width: target.offsetWidth,
+        height: target.offsetHeight,
+        left: box.left + box.width / 2 - target.offsetWidth / 2,
+        top: box.top + box.height / 2 - target.offsetHeight / 2
+      };
+      var look = getComputedStyle(target);
+      flyer = target.cloneNode(true);
+      flyer.classList.remove('landing', 'arrive');
+      flyer.classList.add('flyer');
+      flyer.style.left = (to.left + window.scrollX) + 'px';
+      flyer.style.top = (to.top + window.scrollY) + 'px';
+      flyer.style.width = to.width + 'px';
+      flyer.style.rotate = look.rotate;
+      flyer.style.setProperty('--paper-tone', look.getPropertyValue('--paper-tone'));
+      document.body.appendChild(flyer);
+
+      // Starts from the message box; if that has scrolled away, it drops in from the top edge.
+      var from = fromEl.getBoundingClientRect();
+      var fromY = Math.max(from.top + from.height / 2, -to.height * 0.15);
+      var scale = Math.min(1.1, Math.max(0.6, from.width / to.width));
+      var dx = (from.left + from.width / 2) - (to.left + to.width / 2);
+      var dy = fromY - (to.top + to.height / 2);
+      var lift = Math.min(60, 24 + Math.abs(dy) * 0.08);
+      var sway = Math.abs(dx) < 40 ? 22 : 0; // a gentle sideways float when it drops straight down
+      function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+
+      // One smooth arc, sampled finely so speed, tilt and size all change without kinks.
+      var frames = [];
+      for (var i = 0; i <= 40; i++) {
+        var t = i / 40;
+        var p = ease(t);
+        var q = 1 - p;
+        var x = q * q * q * dx + 3 * q * q * p * dx + 3 * q * p * p * dx * 0.15 + sway * Math.sin(Math.PI * p);
+        var y = q * q * q * dy + 3 * q * q * p * (dy - lift) + 3 * q * p * p * (-lift * 0.5);
+        var s = scale + (LAND - scale) * p + Math.sin(Math.PI * p) * 0.06;
+        var r = -4 * Math.sin(Math.PI * p) * (dx > 0 ? -1 : 1) * (1 - p * 0.3);
+        frames.push({
+          offset: t,
+          opacity: Math.min(1, t / 0.12),
+          transform: 'translate(' + x.toFixed(2) + 'px, ' + y.toFixed(2) + 'px) rotate(' + r.toFixed(2) + 'deg) scale(' + s.toFixed(4) + ')'
+        });
+      }
+      flyer.animate(frames, { duration: 1350, easing: 'linear', fill: 'forwards' }).onfinish = land;
+    }
+
+    // On landing it glows, then opens: the seal cracks, the flap lifts, the card rises.
+    function land() {
+      // Swap in the real envelope already fully shown, so nothing blinks at touchdown.
       target.classList.remove('landing');
-      target.classList.add('stamped');
+      void target.offsetWidth;
+      flyer.remove();
+      target.animate([{ scale: LAND }, { scale: 1 }], { duration: 420, easing: 'cubic-bezier(.3, 0, .2, 1)' });
+      target.classList.add('seen', 'arrived');
+      void target.offsetWidth;
+      target.classList.remove('arrive');
       setTimeout(function () {
-        var s = target.querySelector('.wish-seal').getBoundingClientRect();
+        var s = target.querySelector('.letter-seal').getBoundingClientRect();
         fx.burst(s.left + s.width / 2, s.top + s.height / 2, 34, 3.4);
-        fx.hearts(s.left + s.width / 2, s.top, 14);
-      }, 260);
-      setTimeout(function () { target.classList.remove('stamped'); }, 2200);
-    };
+      }, 520);
+      setTimeout(function () {
+        var c = target.querySelector('.wish-card').getBoundingClientRect();
+        fx.hearts(c.left + c.width / 2, c.top + 20, 16);
+      }, 1500);
+      setTimeout(function () { target.classList.remove('arrived'); }, 2600);
+    }
   }
 
   loadWishes();
