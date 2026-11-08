@@ -140,6 +140,8 @@ a, a:hover, a:focus, a:active { text-decoration: none; }
 
 .js .envelope {
   display: block;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   position: fixed;
   inset: 0;
   z-index: 10;

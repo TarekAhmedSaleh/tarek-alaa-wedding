@@ -219,7 +219,8 @@
     setTimeout(fx.releasePetals, 800);
   }
 
-  seal.addEventListener('click', openEnvelope, { once: true });
+  // A tap anywhere on the envelope opens it; the seal is the button keyboard users reach.
+  envelope.addEventListener('click', openEnvelope, { once: true });
 
   /* Effects canvas: gold dust in the air, sparkles at the fingertip, petals on opening. */
 
