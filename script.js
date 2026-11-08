@@ -509,7 +509,7 @@
   /* Guest wishes, stored in a Google Sheet through guestbook/Code.gs. */
 
   // Paste the web app link from the Apps Script deployment here.
-  var WISHES_URL = '';
+  var WISHES_URL = 'https://script.google.com/macros/s/AKfycbyE_yXJmA8ZC4I0VMLGzCKKYiHUx5R_sE0msBiF5n86KYrrKzq_t1QX9vE6EXe8RJuoWA/exec';
   var PAGE_SIZE = 6;
 
   // A gold wax heart. It is fixed markup, never guest text.
