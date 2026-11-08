@@ -9,8 +9,8 @@
   --gold-pale: #efd9ab;
   --ink: #4a2a2c;
 
-  --script: 'Imperial Script', 'Snell Roundhand', cursive;
-  --serif: 'Spectral', Georgia, serif;
+  --script: 'Alex Brush', 'Snell Roundhand', cursive;
+  --serif: 'Cormorant Garamond', Georgia, serif;
   --gutter: clamp(16px, 5vw, 48px);
   --ease-out: cubic-bezier(.16, .84, .3, 1);
 }
@@ -41,7 +41,7 @@ body {
   margin: 0;
   color: var(--ink);
   font-family: var(--serif);
-  font-weight: 300;
+  font-weight: 500;
   font-size: 1.125rem;
   line-height: 1.6;
   background-color: var(--paper);
@@ -52,6 +52,11 @@ body {
 html[lang='ar'] body { font-weight: 400; font-size: 1.25rem; }
 
 p, h1, h2 { margin: 0; font-weight: inherit; }
+
+/* Cormorant has small lowercase letters; match its apparent size to a typical book face. */
+html[lang='en'] body { font-size-adjust: .5; }
+html[lang='en'] :is(.env-names, .names, .month, .venue, .closing-names) { font-size-adjust: none; }
+html[lang='en'] :is(.day, .cd-num, .year, .time, .address) { font-variant-numeric: lining-nums; }
 [hidden] { display: none !important; }
 img { display: block; max-width: 100%; height: auto; }
 a, a:hover, a:focus, a:active { text-decoration: none; }
@@ -86,7 +91,7 @@ a, a:hover, a:focus, a:active { text-decoration: none; }
 .js .lang { display: block; }
 .lang:hover { background: #fff3e3; }
 .lang:active { transform: scale(.96); }
-.lang[lang='en'] { font-family: 'Spectral', Georgia, serif; }
+.lang[lang='en'] { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600; }
 
 /* Music button: appears once a song is playing. */
 .sound {
@@ -314,7 +319,7 @@ html[lang='ar'] .hero-invite { font-style: normal; font-size: 1.375rem; }
 .names {
   color: var(--wine);
   font-family: var(--script);
-  font-size: clamp(3.5rem, 16.5vw, 7rem);
+  font-size: clamp(3.25rem, 14.5vw, 7rem);
   line-height: 1.05;
   white-space: nowrap;
   clip-path: inset(-40% -35%);
@@ -380,20 +385,6 @@ html[lang='ar'] .names { font-size: clamp(3.25rem, 15.5vw, 6rem); line-height: 1
   overflow: hidden;
 }
 
-/* The watercolor that spreads behind the date as it comes into view. */
-.wash {
-  position: absolute;
-  z-index: -1;
-  top: clamp(-1rem, 2vw, 2rem);
-  left: 50%;
-  width: min(150vw, 820px);
-  max-width: none;
-  margin-left: calc(min(150vw, 820px) / -2);
-  pointer-events: none;
-  transition: transform 2.8s var(--ease-out), opacity 1.8s ease;
-}
-.js .when:not(.in) .wash { opacity: 0; transform: scale(.45) rotate(-14deg); }
-
 .weekday { font-style: italic; font-size: 1.4375rem; }
 html[lang='ar'] .weekday { font-style: normal; font-size: 1.75rem; }
 
@@ -404,7 +395,7 @@ html[lang='ar'] .weekday { font-style: normal; font-size: 1.75rem; }
   color: var(--wine);
 }
 .day {
-  font-weight: 200;
+  font-weight: 300;
   font-size: clamp(9rem, 44vw, 15rem);
   line-height: 1;
   font-variant-numeric: lining-nums;
@@ -470,7 +461,7 @@ html[lang='ar'] .time { font-size: 1.625rem; }
 .cd-num {
   display: block;
   color: var(--wine);
-  font-weight: 200;
+  font-weight: 300;
   font-size: clamp(2.25rem, 10.5vw, 3.25rem);
   line-height: 1.15;
   font-variant-numeric: lining-nums tabular-nums;
@@ -506,7 +497,7 @@ html[lang='ar'] :is(.cd-caption, .cd-done) { font-style: normal; font-size: 1.37
   background: linear-gradient(135deg, #6f2338, var(--wine) 55%, var(--wine-deep));
   box-shadow: inset 0 0 0 1px rgb(239 217 171 / .55), 0 10px 26px -12px rgb(71 18 31 / .75);
   color: #fdeee0;
-  font: 400 1.0625rem/1.5 var(--serif);
+  font: 600 1.0625rem/1.5 var(--serif);
   cursor: pointer;
   transition: transform .25s var(--ease-out), box-shadow .25s ease;
   -webkit-tap-highlight-color: transparent;
@@ -670,6 +661,119 @@ html[lang='ar'] .venue { font-size: clamp(3rem, 14vw, 5rem); line-height: 1.5; }
   font-variant-numeric: lining-nums;
 }
 html[lang='ar'] .address { font-size: 1.5rem; }
+
+/* Guest wishes ------------------------------------------------------------ */
+
+.wishes {
+  max-width: 640px;
+  margin-inline: auto;
+  padding: clamp(1rem, 4vw, 2rem) var(--gutter) 0;
+  text-align: center;
+  transition: opacity 1.1s ease, transform 1.4s var(--ease-out);
+}
+.js .wishes:not(.in) { opacity: 0; transform: translateY(32px); }
+
+.wishes-title {
+  color: var(--wine);
+  font-family: var(--script);
+  font-size: clamp(2.75rem, 11.5vw, 4.5rem);
+  line-height: 1.2;
+}
+html[lang='ar'] .wishes-title { font-size: clamp(2.5rem, 11vw, 3.75rem); line-height: 1.6; }
+
+.wishes-lead { margin-top: .25rem; font-style: italic; font-size: 1.1875rem; }
+html[lang='ar'] .wishes-lead { font-style: normal; font-size: 1.3125rem; }
+
+.wish-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: clamp(1.25rem, 5vw, 2rem);
+  border-radius: 20px;
+  background: rgb(255 248 238 / .65);
+  box-shadow: inset 0 0 0 1px rgb(201 161 95 / .55), 0 24px 50px -34px rgb(71 18 31 / .6);
+  text-align: start;
+}
+
+.field { display: grid; gap: .375rem; }
+.field-label { color: var(--wine); font-size: 1.0625rem; font-weight: 600; }
+html[lang='ar'] .field-label { font-weight: 700; }
+
+.field input,
+.field textarea {
+  width: 100%;
+  padding: .75rem 1rem;
+  border: 1px solid rgb(90 26 43 / .25);
+  border-radius: 12px;
+  background: #fffaf3;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.field textarea { resize: vertical; min-height: 7.5rem; }
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgb(201 161 95 / .3);
+}
+
+.trap { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); opacity: 0; pointer-events: none; }
+
+.wish-form .btn { justify-self: center; min-width: min(100%, 16rem); }
+.wish-form .btn:disabled { opacity: .55; cursor: default; transform: none; }
+.wish-status { min-height: 1.5em; text-align: center; font-size: 1.0625rem; color: var(--wine); }
+.wish-status:empty { display: none; }
+
+.wish-list {
+  display: grid;
+  gap: .875rem;
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wish {
+  position: relative;
+  padding: 1.125rem 1.25rem 1rem;
+  border-radius: 16px;
+  background: rgb(255 250 243 / .8);
+  box-shadow: inset 0 0 0 1px rgb(201 161 95 / .4);
+  text-align: start;
+}
+/* A small gold quotation mark tucked into the corner. */
+.wish::before {
+  content: '\201C';
+  position: absolute;
+  top: -.15em;
+  inset-inline-start: .5rem;
+  color: rgb(201 161 95 / .5);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 3.5rem;
+  line-height: 1;
+}
+.wish.fresh { animation: wish-in .9s var(--ease-out) both; }
+@keyframes wish-in {
+  from { opacity: 0; transform: translateY(-12px) scale(.98); }
+}
+
+.wish-text { position: relative; font-size: 1.1875rem; line-height: 1.55; white-space: pre-line; overflow-wrap: anywhere; }
+.wish-by {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+  margin-top: .625rem;
+}
+.wish-by span { color: var(--wine); font-weight: 600; font-size: 1.0625rem; }
+.wish-by time { color: #8a6a62; font-size: .9375rem; }
+
+.wish-empty { margin-top: 1.5rem; font-style: italic; color: #7a5a5a; }
+html[lang='ar'] .wish-empty { font-style: normal; }
+.wish-more { margin-top: 1.25rem; }
 
 /* Closing ----------------------------------------------------------------- */
 

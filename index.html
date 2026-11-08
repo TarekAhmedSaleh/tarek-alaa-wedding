@@ -17,7 +17,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Imperial+Script&family=Spectral:ital,wght@0,200;0,300;0,400;1,300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Alex+Brush&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="assets/portrait.webp">
   <link rel="stylesheet" href="styles.css">
   <script>
@@ -57,7 +57,7 @@
           <path fill="url(#wax)" d="M60 4c8 0 11 4 18 6s13 1 18 7 3 11 7 17 9 9 9 17-5 11-6 18 2 13-3 19-11 5-17 9-9 10-17 11-12-3-19-4-13 2-19-3-5-11-10-17-10-8-11-16 4-12 4-19-3-13 2-19 11-5 17-10S52 4 60 4Z"/>
           <circle cx="60" cy="59" r="38" fill="none" stroke="#7d5a28" stroke-opacity=".55" stroke-width="1.5"/>
           <circle cx="60" cy="60" r="38" fill="none" stroke="#f1dcae" stroke-opacity=".5" stroke-width="1"/>
-          <text x="60" y="71" text-anchor="middle" font-family="'Imperial Script', cursive" font-size="33" fill="#552f0c">T&amp;A</text>
+          <text x="60" y="71" text-anchor="middle" font-family="'Alex Brush', cursive" font-size="34" fill="#552f0c">T&amp;A</text>
         </g>
       </defs>
     </svg>
@@ -112,7 +112,6 @@
     </section>
 
     <section class="when" aria-labelledby="when-title">
-      <img class="wash" src="assets/wash.webp" alt="" width="900" height="900" loading="lazy">
       <img class="vine vine-right" src="assets/vine.webp" alt="" width="98" height="418" loading="lazy">
       <img class="vine vine-left" src="assets/vine.webp" alt="" width="98" height="418" loading="lazy">
       <h2 class="sr-only" id="when-title" data-i18n="dateHeading">Date</h2>
@@ -151,6 +150,33 @@
           <span data-i18n="directions">Get directions</span>
         </a>
       </div>
+    </section>
+
+    <section class="wishes" aria-labelledby="wishes-title">
+      <h2 class="wishes-title" id="wishes-title" data-i18n="wishesTitle">Leave us a wish</h2>
+      <p class="wishes-lead" data-i18n="wishesLead">Your message will appear here for everyone to read.</p>
+
+      <form class="wish-form" id="wish-form" novalidate>
+        <label class="field">
+          <span class="field-label" data-i18n="nameLabel">Your name</span>
+          <input type="text" name="name" id="wish-name" maxlength="40" autocomplete="name" required>
+        </label>
+        <label class="field">
+          <span class="field-label" data-i18n="messageLabel">Your message</span>
+          <textarea name="message" id="wish-message" maxlength="400" rows="4" dir="auto" required></textarea>
+        </label>
+        <!-- Hidden from people; only robots fill it in. -->
+        <input class="trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button class="btn" type="submit" id="wish-send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2Z"/></svg>
+          <span data-i18n="send">Send wishes</span>
+        </button>
+        <p class="wish-status" id="wish-status" role="status"></p>
+      </form>
+
+      <ul class="wish-list" id="wish-list" aria-live="polite"></ul>
+      <p class="wish-empty" id="wish-empty" hidden></p>
+      <button class="btn btn-ghost wish-more" type="button" id="wish-more" hidden><span data-i18n="more">Show more wishes</span></button>
     </section>
 
     <section class="closing">

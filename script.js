@@ -42,6 +42,20 @@
       calTitle: "Tarek & Alaa's wedding",
       calPlace: 'Gar El Qamar Hall, Khatt 10, Obour',
       icsFile: 'assets/wedding.ics',
+      wishesTitle: 'Leave us a wish',
+      wishesLead: 'Your message will appear here for everyone to read.',
+      nameLabel: 'Your name',
+      messageLabel: 'Your message',
+      send: 'Send wishes',
+      sending: 'Sending…',
+      sent: 'Thank you! Your wishes have been added.',
+      sendFailed: "Your message didn't send. Check your connection and try again.",
+      needBoth: 'Please write your name and a message.',
+      loading: 'Loading wishes…',
+      loadFailed: "Wishes couldn't load right now. Refresh the page to try again.",
+      empty: 'Be the first to leave a wish.',
+      more: 'Show more wishes',
+      notReady: 'Messages open soon.',
       mute: 'Turn music off', unmute: 'Turn music on',
       switchTo: 'العربية', switchLang: 'ar', switchLabel: 'التبديل إلى العربية'
     },
@@ -73,6 +87,20 @@
       calTitle: 'حفل زفاف طارق وآلاء',
       calPlace: 'قاعة جار القمر، خط 10، العبور',
       icsFile: 'assets/wedding-ar.ics',
+      wishesTitle: 'اترك لنا تهنئة',
+      wishesLead: 'ستظهر رسالتك هنا ليقرأها الجميع.',
+      nameLabel: 'اسمك',
+      messageLabel: 'رسالتك',
+      send: 'أرسل التهنئة',
+      sending: 'جارٍ الإرسال…',
+      sent: 'شكرًا لك! تمت إضافة تهنئتك.',
+      sendFailed: 'لم تُرسل رسالتك. تأكد من اتصالك بالإنترنت وحاول مرة أخرى.',
+      needBoth: 'من فضلك اكتب اسمك ورسالتك.',
+      loading: 'جارٍ تحميل التهاني…',
+      loadFailed: 'تعذّر تحميل التهاني الآن. حدّث الصفحة وحاول مرة أخرى.',
+      empty: 'كن أول من يترك تهنئة.',
+      more: 'عرض المزيد من التهاني',
+      notReady: 'ستتاح التهاني قريبًا.',
       mute: 'إيقاف الموسيقى', unmute: 'تشغيل الموسيقى',
       switchTo: 'English', switchLang: 'en', switchLabel: 'Switch to English'
     }
@@ -109,6 +137,7 @@
 
     shareStatus.textContent = '';
     updateSoundLabel();
+    if (typeof renderWishes === 'function') renderWishes();
     updateCountdown();
   }
 
@@ -382,7 +411,7 @@
 
   /* Sections come alive as they scroll into view. */
 
-  var sections = document.querySelectorAll('.when, .where, .closing');
+  var sections = document.querySelectorAll('.when, .where, .wishes, .closing');
   if ('IntersectionObserver' in window) {
     var seen = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
@@ -447,6 +476,132 @@
     window.addEventListener('resize', onScroll);
     onScroll();
   }
+
+  /* Guest wishes, stored in a Google Sheet through guestbook/Code.gs. */
+
+  // Paste the web app link from the Apps Script deployment here.
+  var WISHES_URL = '';
+  var PAGE_SIZE = 6;
+
+  var wishForm = document.getElementById('wish-form');
+  var wishStatus = document.getElementById('wish-status');
+  var wishList = document.getElementById('wish-list');
+  var wishEmpty = document.getElementById('wish-empty');
+  var wishMore = document.getElementById('wish-more');
+  var wishSend = document.getElementById('wish-send');
+  var wishes = null;
+  var wishState = 'loading';
+  var shown = PAGE_SIZE;
+  var statusKey = '';
+
+  function setWishStatus(key) {
+    statusKey = key;
+    wishStatus.textContent = key ? TEXT[lang][key] : '';
+  }
+
+  function renderWishes() {
+    if (statusKey) wishStatus.textContent = TEXT[lang][statusKey];
+    wishList.textContent = '';
+    wishMore.hidden = true;
+
+    if (wishState !== 'ready') {
+      wishEmpty.hidden = false;
+      wishEmpty.textContent = TEXT[lang][wishState === 'failed' ? 'loadFailed' : wishState === 'off' ? 'notReady' : 'loading'];
+      return;
+    }
+    wishEmpty.hidden = wishes.length > 0;
+    wishEmpty.textContent = TEXT[lang].empty;
+
+    var dateFormat = new Intl.DateTimeFormat(lang === 'ar' ? 'ar-EG' : 'en-GB', { day: 'numeric', month: 'long' });
+    wishes.slice(0, shown).forEach(function (w) {
+      var item = document.createElement('li');
+      item.className = 'wish' + (w.fresh ? ' fresh' : '');
+      var text = document.createElement('p');
+      text.className = 'wish-text';
+      text.dir = 'auto';
+      text.textContent = w.message;
+      var by = document.createElement('p');
+      by.className = 'wish-by';
+      var who = document.createElement('span');
+      who.dir = 'auto';
+      who.textContent = w.name;
+      var when = document.createElement('time');
+      when.dateTime = w.time;
+      when.textContent = dateFormat.format(new Date(w.time));
+      by.append(who, when);
+      item.append(text, by);
+      wishList.appendChild(item);
+      w.fresh = false;
+    });
+    wishMore.hidden = wishes.length <= shown;
+  }
+
+  function loadWishes() {
+    // Until the Google Sheet is connected, the section stays out of sight.
+    if (!WISHES_URL) {
+      document.querySelector('.wishes').hidden = true;
+      return;
+    }
+    fetch(WISHES_URL)
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.ok) throw new Error('not ok');
+        wishes = data.messages;
+        wishState = 'ready';
+        renderWishes();
+      })
+      .catch(function () {
+        wishState = 'failed';
+        renderWishes();
+      });
+  }
+
+  wishMore.addEventListener('click', function () {
+    shown += PAGE_SIZE;
+    renderWishes();
+  });
+
+  wishForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = wishForm.elements.name.value.trim();
+    var message = wishForm.elements.message.value.trim();
+    if (!name || !message) {
+      setWishStatus('needBoth');
+      (name ? wishForm.elements.message : wishForm.elements.name).focus();
+      return;
+    }
+
+    wishSend.disabled = true;
+    setWishStatus('sending');
+
+    // Sent as plain text so the browser doesn't need extra permission from Google first.
+    fetch(WISHES_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ name: name, message: message, lang: lang, website: wishForm.elements.website.value })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.ok) throw new Error(data.error || 'not ok');
+        var added = data.message || { time: new Date().toISOString(), name: name, message: message };
+        added.fresh = true;
+        wishes = [added].concat(wishes || []);
+        wishState = 'ready';
+        wishForm.reset();
+        setWishStatus('sent');
+        renderWishes();
+        var r = wishSend.getBoundingClientRect();
+        fx.burst(r.left + r.width / 2, r.top + r.height / 2, 46, 5);
+      })
+      .catch(function () {
+        setWishStatus('sendFailed');
+      })
+      .then(function () {
+        wishSend.disabled = false;
+      });
+  });
+
+  loadWishes();
 
   /* Sharing */
 
