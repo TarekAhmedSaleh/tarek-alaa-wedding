@@ -380,6 +380,8 @@ html[lang='ar'] .names { font-size: clamp(3.25rem, 15.5vw, 6rem); line-height: 1
 .when {
   position: relative;
   isolation: isolate;
+  max-width: 1000px;
+  margin-inline: auto;
   padding: clamp(2.5rem, 8vw, 5rem) var(--gutter) clamp(4rem, 10vw, 6rem);
   text-align: center;
   overflow: hidden;
@@ -757,6 +759,8 @@ html[lang='ar'] .field-label { font-weight: 700; }
 }
 @media (min-width: 720px) {
   .wish-list { columns: 2; column-gap: 1.5rem; }
+  /* A single note sits in the middle instead of the left column. */
+  .wish-list:has(> .wish:only-child) { columns: 1; max-width: 430px; margin-inline: auto; }
 }
 
 .wish {
@@ -855,6 +859,8 @@ html[lang='ar'] .wish-empty { font-style: normal; }
 .closing {
   position: relative;
   display: grid;
+  max-width: 1000px;
+  margin-inline: auto;
   justify-items: center;
   padding: clamp(9rem, 38vw, 14rem) var(--gutter) clamp(4rem, 10vw, 6rem);
   text-align: center;
